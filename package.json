@@ -9,8 +9,8 @@
   "commands": [
     {
       "name": "generate-password",
-      "title": "generate password",
-      "description": "",
+      "title": "Generate password",
+      "description": "Create a password with the options you choose",
       "mode": "view"
     }
   ],
