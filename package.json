@@ -6,10 +6,15 @@
   "icon": "extension-icon.png",
   "author": "nookee411",
   "license": "MIT",
+  "categories": [
+    "Data",
+    "Productivity",
+    "Security"
+  ],
   "commands": [
     {
       "name": "generate-password",
-      "title": "Generate password",
+      "title": "Generate Password",
       "description": "Create a password with the options you choose",
       "mode": "view"
     }
