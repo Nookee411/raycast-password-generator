@@ -1,5 +1,4 @@
-import { Form, ActionPanel, Action, showToast, Toast } from "@raycast/api";
-import { useForm } from "@raycast/utils";
+import { Form, ActionPanel, Action, showToast, Toast, showHUD } from "@raycast/api";
 import { Clipboard } from "@raycast/api";
 import PasswordService from "./modules/password.service";
 import { useEffect, useMemo, useState } from "react";
@@ -33,7 +32,6 @@ export type PasswordPresets = (typeof PasswordPresets)[keyof typeof PasswordPres
 export type PasswordOptions = (typeof PasswordOptions)[keyof typeof PasswordOptions];
 
 export default function Command() {
-  const [password, setPassword] = useState("");
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
   const [passwordOptions, setPasswordOptions] = useState<GeneratePasswordFormValues>({
     passwordLength: 16,
@@ -70,12 +68,12 @@ export default function Command() {
     });
   };
   const validateOnBlur = (option: PasswordOptions, value?: string) => {
+    const passwordLength = Number(value);
     switch (option) {
       case PasswordOptions.passwordLength:
         if (!value) {
           addPasswordOptionError(option, "Password length is required");
         }
-        const passwordLength = Number(value);
         if (Number.isNaN(passwordLength)) {
           addPasswordOptionError(option, "Password length must be a number");
         }
@@ -133,10 +131,6 @@ export default function Command() {
   }, [passwordPreset]);
 
   const handlePasswordOptionChange = (value: boolean | string, option: PasswordOptions) => {
-    let newValue: boolean | number | string = value;
-    if (option === PasswordOptions.passwordLength) {
-      newValue = Number(value);
-    }
     removePasswordOptionError(option);
     setPasswordOptions((oldVal) => {
       return {
@@ -156,7 +150,6 @@ export default function Command() {
       allowAmbiguousCharacters: passwordOptions[PasswordOptions.allowAmbiguousCharacters],
       blockList: passwordOptions[PasswordOptions.blockList],
     });
-    setPassword(password);
     await Clipboard.copy(password);
     showToast({
       style: Toast.Style.Success,
@@ -175,7 +168,8 @@ export default function Command() {
       allowAmbiguousCharacters: passwordOptions[PasswordOptions.allowAmbiguousCharacters],
       blockList: passwordOptions[PasswordOptions.blockList],
     });
-    setPassword(password);
+    Clipboard.paste(password);
+    showHUD("Password pasted");
   };
 
   const entropyBits = useMemo(() => {
@@ -202,7 +196,7 @@ export default function Command() {
       actions={
         <ActionPanel>
           <Action.SubmitForm onSubmit={onSubmit} title="Generate Password" icon="🔑" />
-          <Action.Paste onPaste={onPaste} title="Paste Password" content={"api@raycast.com"} icon="📋" />
+          <Action onAction={onPaste} title="Paste Password" icon="📋" />
         </ActionPanel>
       }
     >

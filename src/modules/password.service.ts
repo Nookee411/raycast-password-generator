@@ -51,7 +51,6 @@ const PasswordService = {
     if (blockList && blockList.length) {
       alphabet = alphabet.replaceAll(new RegExp(`[${blockList}]`, "gi"), "");
     }
-    console.log(alphabet);
     return alphabet;
   },
 };
