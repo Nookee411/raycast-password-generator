@@ -201,15 +201,15 @@ export default function Command() {
     <Form
       actions={
         <ActionPanel>
-          <Action.SubmitForm onSubmit={onSubmit} title="Generate Password" />
-          <Action.Paste onPaste={onPaste} title="Paste Password" content={"api@raycast.com"} />
+          <Action.SubmitForm onSubmit={onSubmit} title="Generate Password" icon="🔑" />
+          <Action.Paste onPaste={onPaste} title="Paste Password" content={"api@raycast.com"} icon="📋" />
         </ActionPanel>
       }
     >
       <Form.TextField
         id="passwordLength"
         title="Length"
-        placeholder="Enter text"
+        placeholder="Enter length"
         value={passwordOptions.passwordLength.toString()}
         onChange={(value) => handlePasswordOptionChange(value, PasswordOptions.passwordLength)}
         onBlur={(value) => validateOnBlur(PasswordOptions.passwordLength, value.target.value)}
