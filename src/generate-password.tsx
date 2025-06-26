@@ -11,6 +11,7 @@ type GeneratePasswordFormValues = {
   [PasswordOptions.useNumbers]: boolean;
   [PasswordOptions.useSymbols]: boolean;
   [PasswordOptions.allowAmbiguousCharacters]: boolean;
+  [PasswordOptions.blockList]: string;
 };
 
 const PasswordPresets = {
@@ -25,12 +26,14 @@ const PasswordOptions = {
   useSymbols: "useSymbols",
   allowAmbiguousCharacters: "allowAmbiguousCharacters",
   passwordLength: "passwordLength",
+  blockList: "blockList",
 } as const;
 
 export type PasswordPresets = (typeof PasswordPresets)[keyof typeof PasswordPresets];
 export type PasswordOptions = (typeof PasswordOptions)[keyof typeof PasswordOptions];
 
 export default function Command() {
+  const [password, setPassword] = useState("");
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
   const [passwordOptions, setPasswordOptions] = useState<GeneratePasswordFormValues>({
     passwordLength: 16,
@@ -39,6 +42,7 @@ export default function Command() {
     useSymbols: true,
     useUpperCase: true,
     allowAmbiguousCharacters: true,
+    blockList: "",
   });
   const [passwordOptionErrors, setPasswordOptionErrors] = useState<Record<PasswordOptions, string | undefined>>({
     passwordLength: undefined,
@@ -47,6 +51,7 @@ export default function Command() {
     useNumbers: undefined,
     useSymbols: undefined,
     allowAmbiguousCharacters: undefined,
+    blockList: undefined,
   });
   const addPasswordOptionError = (option: PasswordOptions, error: string) => {
     setPasswordOptionErrors((oldVal) => {
@@ -141,21 +146,36 @@ export default function Command() {
     });
   };
 
-  const onSubmit = async (values: GeneratePasswordFormValues) => {
+  const onSubmit = async () => {
     const password = PasswordService.generatePassword({
-      passwordLength: Number(values.passwordLength),
-      useNumbers: true,
-      useSymbols: true,
-      useLowerCase: true,
-      useUpperCase: true,
-      allowAmbiguousCharacters: false,
+      passwordLength: passwordOptions[PasswordOptions.passwordLength],
+      useNumbers: passwordOptions[PasswordOptions.useNumbers],
+      useSymbols: passwordOptions[PasswordOptions.useSymbols],
+      useLowerCase: passwordOptions[PasswordOptions.useLowerCase],
+      useUpperCase: passwordOptions[PasswordOptions.useUpperCase],
+      allowAmbiguousCharacters: passwordOptions[PasswordOptions.allowAmbiguousCharacters],
+      blockList: passwordOptions[PasswordOptions.blockList],
     });
+    setPassword(password);
     await Clipboard.copy(password);
     showToast({
       style: Toast.Style.Success,
       title: "Password copied to clipboard!",
       message: `${password}`,
     });
+  };
+
+  const onPaste = async () => {
+    const password = PasswordService.generatePassword({
+      passwordLength: passwordOptions[PasswordOptions.passwordLength],
+      useNumbers: passwordOptions[PasswordOptions.useNumbers],
+      useSymbols: passwordOptions[PasswordOptions.useSymbols],
+      useLowerCase: passwordOptions[PasswordOptions.useLowerCase],
+      useUpperCase: passwordOptions[PasswordOptions.useUpperCase],
+      allowAmbiguousCharacters: passwordOptions[PasswordOptions.allowAmbiguousCharacters],
+      blockList: passwordOptions[PasswordOptions.blockList],
+    });
+    setPassword(password);
   };
 
   const entropyBits = useMemo(() => {
@@ -181,11 +201,11 @@ export default function Command() {
     <Form
       actions={
         <ActionPanel>
-          <Action.SubmitForm onSubmit={onSubmit} />
+          <Action.SubmitForm onSubmit={onSubmit} title="Generate Password" />
+          <Action.Paste onPaste={onPaste} title="Paste Password" content={"api@raycast.com"} />
         </ActionPanel>
       }
     >
-      <Form.Description text="Choose preferred password options." />
       <Form.TextField
         id="passwordLength"
         title="Length"
@@ -255,7 +275,16 @@ For saying - avoid numbers and special symbols`}
             value={passwordOptions.allowAmbiguousCharacters}
             onChange={(value) => handlePasswordOptionChange(value, PasswordOptions.allowAmbiguousCharacters)}
           />
-          <Form.Description text={`Entropy bits: ${entropyBits.toFixed(2)}`} />
+          <Form.TextField
+            id="blockList"
+            title="Block List"
+            placeholder="Enter symbols"
+            value={passwordOptions[PasswordOptions.blockList]}
+            onChange={(value) => handlePasswordOptionChange(value, PasswordOptions.blockList)}
+            info="Specify symbols (e.g., A @ 3) that should not appear in generated passwords."
+            error={passwordOptionErrors.blockList}
+          />
+          <Form.Description title="Entropy bits" text={`${entropyBits.toFixed(2)}`} />
         </>
       ) : null}
     </Form>

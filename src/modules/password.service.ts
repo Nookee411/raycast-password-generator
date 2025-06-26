@@ -5,6 +5,7 @@ export type GeneratePasswordOptions = {
   useLowerCase: boolean;
   useUpperCase: boolean;
   allowAmbiguousCharacters: boolean;
+  blockList: string;
 };
 
 const symbols = "!@#$%^&*()_+-=[]{}\\|;:'\",./<>?";
@@ -30,7 +31,7 @@ const PasswordService = {
   },
 
   formAlphabet: (options: GeneratePasswordOptions) => {
-    const { useNumbers, useSymbols, useLowerCase, useUpperCase, allowAmbiguousCharacters } = options;
+    const { useNumbers, useSymbols, useLowerCase, useUpperCase, allowAmbiguousCharacters, blockList } = options;
     let alphabet = "";
     if (useNumbers) {
       alphabet += numbers;
@@ -47,6 +48,10 @@ const PasswordService = {
     if (!allowAmbiguousCharacters) {
       alphabet = alphabet.replaceAll(replacementRegex, "");
     }
+    if (blockList && blockList.length) {
+      alphabet = alphabet.replaceAll(new RegExp(`[${blockList}]`, "gi"), "");
+    }
+    console.log(alphabet);
     return alphabet;
   },
 };
